@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Name of the project: IPE - Statistical Programming Python
+Description: This game tries to predict human behevior by anticipating the throws of the player using the count of the player's previous moves.'
+Author: Johanna Andrango
+Last updated: 04/02/2021
+"""
+
+def linear_congruence(xi):
+    """ Function to calculate linear congruences value and computer's bet"""
+    a = 22695477
+    b = 1
+    m = 2**32
+    xi_plus_1 = ( a * xi + b) % m
+    if xi_plus_1 <= 2**31 :
+        comp_move = 0
+    else:
+        comp_move = 1
+    return comp_move, xi_plus_1
+
+print("Welcome to Human Behavior Prediction by Johanna Andrango")
+
+def choose_difficulty():
+    """Function that let the player choose the level of difficulty """
+    while True:
+        try:
+            select_difficulty = int(input("Choose the type of game (1: Easy; 2: Difficult): "))
+            if select_difficulty == 1 or select_difficulty ==2 :
+                return select_difficulty
+        except ValueError:
+            print("Sorry! That was not a valid number. Please choose 1 or 2")
+
+def choose_moves():
+    """Function that let the player choose the number of moves"""
+    while True:
+        try:
+            moves = int(input("Enter the number of moves: "))
+            if (moves > 0):
+                return moves
+        except ValueError:
+            print("Sorry! That was not a valid number. Please choose a number.")
+
+def decision_computer_move(player_choice, xi, select_difficulty):
+    """Function to determine computer's decision depending on the level of difficulty and player's choice"""
+    throw00 = 0
+    throw01 = 0
+    throw10 = 0
+    throw11 = 0
+    i = 1
+    length = len(player_choice)
+    if (length <= 1 or select_difficulty ==1):
+        computer_move=0
+        while i<length:
+            computer_move,xi = linear_congruence(xi)
+            i = i + 1
+        return computer_move
+    while i <length:
+        previous_move = player_choice[i-1]
+        current_move = player_choice[i]
+        if (previous_move ==0 and current_move ==0):
+            throw00 = throw00 + 1
+        elif (previous_move ==0 and current_move ==1):
+            throw01 = throw01 + 1
+        elif (previous_move == 1 and current_move == 0):
+            throw10 = throw10 + 1
+        elif (previous_move == 1 and current_move == 1):
+            throw11 = throw11 + 1
+        i = i + 1
+
+    last_throw = player_choice[-1]
+    if (last_throw ==0):
+        if (throw10 > throw00):
+            computer_move= 1
+        elif (throw10 < throw00):
+            computer_move = 0
+        elif (throw10 == throw00):
+            computer_move, xi = linear_congruence(xi)
+    elif (last_throw == 1):
+        if (throw11 > throw01):
+            computer_move = 1
+        elif (throw11 < throw01):
+            computer_move = 0
+        elif (throw11 == throw01):
+            computer_move,xi = linear_congruence(xi)
+    return computer_move
+
+def start_game(xi, MS, PS, select_difficulty, moves, player_choice):
+    """ Function that sets the game taking into account the level of difficulty, the player's moves and the player's choice."""
+    if (select_difficulty ==1):
+        difficulty = "Easy"
+    else:
+        difficulty = "Difficult"
+    for turn in range(moves):
+        while True:
+            try:
+                computer_move =  decision_computer_move(player_choice, xi, select_difficulty)
+                player_move = int(input("Choose your move number %s (0 or 1):" %(turn+1)))
+                if (player_move == 1 or player_move == 0):
+                    player_choice.append(player_move)
+                    break
+                else:
+                    print("Please insert only 1 or 0")
+            except:
+                 print("Sorry! That was not a valid number. Please choose 0 or 1.")
+        if player_move == computer_move:
+            MS = MS + 1
+            print(f'player = {player_move} machine = {computer_move} - Machine wins!')
+            print("You: %d Computer: %d" % (PS, MS))
+        else:
+            PS = PS + 1
+            print(f'player = {player_move} machine = {computer_move} - Player wins!')
+            print("You: %d Computer: %d" %(PS,MS))
+
+        print("Player: " + "*"*PS)
+        print("Computer: " + "*" *MS)
+    if (MS > PS):
+        print( "Sorry! Machince wins, "+difficulty+" Game is over. The final score is Player: "+str(PS)+" - Computer "+str(MS))
+        return 0
+    elif (MS == PS):
+        print("It was a tie! "+difficulty+" Game is over. The final score is Player: "+str(PS)+" - Computer: "+str(MS))
+    else:
+        print("Congratulations!! Player wins, "+difficulty+" Game is Over. The final score is Player: "+str(PS)+" - Computer: " + str(MS))
+        return 1
+
+def play_game():
+    """Funtion that allows the player to start the game again and collects the results of all the rounds"""
+    player_won = 0
+    computer_won = 0
+    player_choice= []
+    while True:
+        select_difficulty = choose_difficulty()
+        moves = choose_moves()
+        xi = 1234
+        MS = 0
+        PS = 0
+        result= start_game(xi, MS,PS, select_difficulty, moves, player_choice)
+        if (result == 1):
+            player_won = player_won + 1
+        elif (result == 0):
+            computer_won = computer_won + 1
+        play_again = input("Do you want to start a new game? Yes (Y) No (N): ")
+        if (play_again.upper() != "Y"):
+            break
+    print("Total Player Wins: " +str(player_won))
+    print("Total Computer Wins:" +str(computer_won))
+play_game()
